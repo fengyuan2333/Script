@@ -196,9 +196,14 @@ while(isskip==false){
                 // console.log(111);
                 for (let key in topics) {
                     if(topics[key]['sign_action']!=null){
+                        // console.log('进入签到================')
                         var action=topics[key]['sign_action'];
                         var title=topics[key]['title'];
                         var message=await sign_topic(title,action,jsonParams2['str']);
+                        console.log('延迟测试3秒');
+                        sleep(3000);
+                        $nobyda.wait(3000);
+                        console.log('3秒完成');
                         message_to_push += message+'\n';
                     }
                 }
@@ -643,11 +648,23 @@ function nobyda() {
     }
   }
 
+
+
+
+
+
   const log = (message) => console.log(message)
   const time = () => {
     const end = ((Date.now() - start) / 1000).toFixed(2)
     return console.log('\n签到用时: ' + end + ' 秒')
   }
+
+  const wait = (time) =>{
+      return new Promise((resolve) => setTimeout(resolve, time));
+  }
+
+
+
   const done = (value = {}) => {
     if (isQuanX) return $done(value)
     if (isSurge) isRequest ? $done(value) : $done()
@@ -663,11 +680,19 @@ function nobyda() {
     log,
     time,
     times,
+      wait,
     done
   }
 };
 
-
+function sleep(delay) {
+    var start = (new Date()).getTime();
+    console.log('测试');
+    while((new Date()).getTime() - start < delay) {
+      console.log('测试212');
+        continue;
+    }
+}
 
 
 function urlParamsToJson(url) {
