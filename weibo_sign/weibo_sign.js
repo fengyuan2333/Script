@@ -135,14 +135,28 @@ var $nobyda = nobyda();
 
 var succeeded=false;
 var jsonParams = urlParamsToJson(cookie);
-var username=''
+var username='';
+var username_return='';
+
 var message_to_push = "";
 while (succeeded==false){
     try {
 
+var username_return= await get_username_wait(jsonParams['str']);
 
+var isskip=false;
+
+if (username_return['issuccess']==true){
+    username=username_return['username'];
+
+}else{
+    break;
+
+}
 
 username= await get_username_wait(jsonParams['str']);
+
+
 var since_id=await get_since_id(jsonParams['str']);
 
 jsonParams['json']['count']='1000';
@@ -151,7 +165,8 @@ headers1['Authorization']=generate_authorization(jsonParams['json']);
 
 var jsonParams2=ParamsJsonUpdate(jsonParams);
 
-while(true){
+
+while(true && isskip==true){
 
                 // # 重置 output 为空字符串
                 var output = "";
@@ -207,8 +222,12 @@ console.log(message_to_push);
 }
 
 
+if(username_return['issuccess']){
+    $nobyda.notify("微博超话签到执行完成", "用户名："+username, message_to_push);
+}else{
+    $nobyda.notify("微博超话签到执行失败", '', username_return['errmsg']);
+}
 
-      $nobyda.notify("微博超话签到执行完成", "用户名："+username, message_to_push);
         await $nobyda.time();
     } else {
       console.log(`Cookie缺少关键值，需重新获取`)
@@ -239,19 +258,31 @@ function get_username_wait(params){
           url:'https://api.weibo.cn/2/profile/me?'+params,
           headers:headers1,
       }
+      var returnmsg={
+          issuccess:false,
+              username:''
+      }
 
     $nobyda.get(URL, function (error, response, data) {
-    var username='';
+    var username1='';
 
       const Details = LogDetails ? `msg:\n${data || error}` : '';
       try {
         if (error) throw new Error(`请求失败`);
         const obj = JSON.parse(data);
             try{
-                username=obj['mineinfo']['screen_name'];
+                username1=obj['mineinfo']['screen_name'];
+                returnmsg['issuccess']=true;
+                returnmsg['username']=username1;
                 taskListMsg='获取成功';
+
             } catch(error){
+
                 taskListMsg='获取失败';
+                returnmsg['errmsg']=obj['errmsg'];
+
+
+
             }
 
       } catch (e) {
@@ -260,9 +291,9 @@ function get_username_wait(params){
         console.log(taskListMsg);
       }
 
-        console.log('用户名:'+username);
+        console.log('用户名:'+username1);
 
-      resolve(username);
+      resolve(returnmsg);
     })
   })
 
