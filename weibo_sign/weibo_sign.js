@@ -405,9 +405,11 @@ function get_topics(params){
             headers:headers1
     }
 
-     $nobyda.get(URL, function (errormsg, response, data) {
+     $nobyda.get(URL, function (error, response, data) {
 
-        if(errormsg!==null){
+        if(error !== null){
+            console.log('获取失败error测试');
+            console.log(error);
             resolve('获取失败');
         }else if (response.statusCode== 200) {
             var datas=JSON.parse(data);
