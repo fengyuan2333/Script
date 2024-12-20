@@ -135,14 +135,14 @@ var $nobyda = nobyda();
 
 var succeeded=false;
 var jsonParams = urlParamsToJson(cookie);
-
+var username=''
 var message_to_push = "";
 while (succeeded==false){
     try {
 
 
 
-var username= await get_username_wait(jsonParams['str']);
+username= await get_username_wait(jsonParams['str']);
 var since_id=await get_since_id(jsonParams['str']);
 
 jsonParams['json']['count']='1000';
@@ -208,7 +208,7 @@ console.log(message_to_push);
 
 
 
-      $nobyda.notify("微博超话签到执行完成", "", message_to_push);
+      $nobyda.notify("微博超话签到执行完成", "用户名："+username, message_to_push);
         await $nobyda.time();
     } else {
       console.log(`Cookie缺少关键值，需重新获取`)
