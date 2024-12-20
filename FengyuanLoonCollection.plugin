@@ -70,7 +70,7 @@ http-request ^https:\/\/(auth|aliyundrive)\.alipan\.com\/v2\/account\/token scri
 
 #微博超话签到
 cron {wb_cron1} script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, tag=7-微博超话签到,enable={wb_qd}
-^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, requires-body=true, timeout=50, enabled=true, tag=7-捕获微博超话cookie,enable={wb_cookie}
+http-request ^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, requires-body=true, timeout=50, enabled=true, tag=7-捕获微博超话cookie,enable={wb_cookie}
 
 
 
