@@ -68,8 +68,9 @@ var barkKey = ''; //Bark APP 通知推送Key
 
 var barkServer = ''; //Bark APP 通知服务端地址(默认官方)
 
-
-
+var retry=5;//失败时重试次数;
+var retry_time=1000//重试间隔,单位:ms;
+var sign_time=500//超话签到间隔,单位ms;
 /*********************
 QuantumultX 远程脚本配置:
 **********************
@@ -146,12 +147,16 @@ var succeeded=false;
 var jsonParams = urlParamsToJson(cookie);
 var username='';
 var username_return={'issuccess':false};
-
+var loperror=0;
 var message_to_push = "";
-while (succeeded==false){
+var message_to_push_count=0;
+while (succeeded==false && loperror<=retry){
     try {
 
-var username_return= await get_username_wait(jsonParams['str']);
+
+
+        var username_return= await get_username_wait(jsonParams['str']);
+
 
 var isskip=false;
 
@@ -164,6 +169,8 @@ if (username_return['issuccess']==true){
     break;
 
 }
+
+
 
 // username= await get_username_wait(jsonParams['str']);
 
@@ -182,7 +189,19 @@ while(isskip==false){
                 // # 重置 output 为空字符串
                 var output = "";
                 // # 假设您有一个函数 get_topics 来获取主题列表
-                var topics = await get_topics(jsonParams2['str'], headers1);
+                var ii=0;
+                var topics='';
+                topics = await get_topics(jsonParams2['str'], headers1);
+                while(topics=='获取失败' && ii <=retry){
+                    ii++;
+                    console.log('获取失败，预计重试'+retry+'次,准备'+retry_time/1000+'秒后第'+ii+'次重试');
+                    $nobyda.sleep(retry_time);
+                    console.log('开始重试');
+                    topics = await get_topics(jsonParams2['str'], headers1);
+
+                }
+
+
                 // console.log(topics);
                 var isjump=false;
                 for (let key in topics) {
@@ -208,9 +227,24 @@ while(isskip==false){
                         // console.log('进入签到================')
                         var action=topics[key]['sign_action'];
                         var title=topics[key]['title'];
-                        var message=await sign_topic(title,action,jsonParams2['str']);
-                        $nobyda.sleep(1000);
+
+
+                        var ii=0;
+                        var message='';
+                        message=await sign_topic(title,action,jsonParams2['str']);
+                        while(message=='获取失败' && ii <=retry){
+                            ii++;
+                            console.log('获取失败，预计重试'+retry+'次,准备'+retry_time/1000+'秒后第'+ii+'次重试');
+                            $nobyda.sleep(retry_time);
+                            console.log('开始重试');
+                            message=await sign_topic(title,action,jsonParams2['str']);
+
+                        }
+                        if(message!='获取失败'){
+                            message_to_push_count++;
+                        }
                         message_to_push += message+'\n';
+                        $nobyda.sleep(sign_time);
                     }
                 }
                 }
@@ -227,16 +261,18 @@ console.log(message_to_push);
 
 
     }catch(error){
-    console.log('出错,等待60秒');
+    console.log('出错,等待10秒后进行第'+loperror+1+'次重试');
     console.log(error);
-    await new Promise(r => setTimeout(r, 60000));
-    console.log('60秒等待完成');
+    $nobyda.sleep(10000);
+    // await new Promise(r => setTimeout(r, 60000));
+    console.log('10秒等待完成');
+    loperror++;
     }
 }
 
 
 if(username_return['issuccess']){
-    $nobyda.notify("微博超话签到执行完成", "用户名："+username, message_to_push);
+    $nobyda.notify("微博超话签到执行完成", "用户名："+username, '成功签到【'+message_to_push_count+'】个超话\n'+message_to_push);
 }else{
     $nobyda.notify("微博超话签到执行失败", '', username_return['errmsg']);
 }
@@ -370,10 +406,9 @@ function get_topics(params){
     }
 
      $nobyda.get(URL, function (errormsg, response, data) {
-         // console.log(response.statusCode);
-         // console.log(11);
+
         if(errormsg!==null){
-        console.log('失败:'+errormsg)
+            resolve('获取失败');
         }else if (response.statusCode== 200) {
             var datas=JSON.parse(data);
             var cards=datas['cards'];
@@ -437,11 +472,12 @@ console.log(output);
 
 
         }else{
-            console.log('获取超话列表出现错误');
+
+            console.log('获取超话列表出现错误，建议重试');
             // console.log(response);
 
-            console.log(response);
-            console.log('response===========');
+            // console.log(response);
+            // console.log('response===========');
 
             console.log(data);
             console.log('data==============');
@@ -450,7 +486,7 @@ console.log(output);
         }
         // return '1';
         //  console.log('超话列表获取出错');
-        resolve()
+        resolve('获取失败');
     });
 
 
@@ -481,7 +517,10 @@ function sign_topic(title, action, params) {
     }
     $nobyda.get(URL, function (errormsg, response, data) {
         if (errormsg !== null) {
-            console.log('失败:' + errormsg)
+            console.log('签到失败:' + errormsg);
+            console.log('出现错误');
+            console.log(response);
+            resolve('获取失败')
         } else if (response.statusCode == 200) {
             // console.log(data);
             var datas = JSON.parse(data);
@@ -499,6 +538,8 @@ function sign_topic(title, action, params) {
         } else {
             console.log('出现错误');
             console.log(response);
+            resolve('获取失败')
+
         }
         resolve();
     });
