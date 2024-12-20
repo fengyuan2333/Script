@@ -66,11 +66,11 @@ QuantumultX 远程脚本配置:
 **********************
 [task_local]
 # 微博超话签到
-0 9 * * * https://raw.githubusercontent.com/fengyuan2333/Script/weibo.js
+0 9 * * * https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js
 
 [rewrite_local]
 # 获取Cookie
-^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) url script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/weibo.js
+^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) url script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js
 
 [mitm]
 hostname= api.weibo.cn
@@ -79,9 +79,9 @@ hostname= api.weibo.cn
 Surge 4.2.0+ 脚本配置:
 **********************
 [Script]
-微博超话签到 = type=cron,cronexp=0 9 * * *,timeout=120,script-path=script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/weibo.js
+微博超话签到 = type=cron,cronexp=0 9 * * *,timeout=120,script-path=script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js
 
-爱奇艺获取Cookie = type=http-request,pattern=^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist),script-path=script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/weibo.js
+微博超话获取Cookie = type=http-request,pattern=^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist),script-path=script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js
 
 [MITM]
 hostname= api.weibo.cn
@@ -91,11 +91,11 @@ Loon 2.1.0+ 脚本配置:
 ************************
 
 [Script]
-# 爱奇艺签到
-cron "0 9 * * *" script-path=https://raw.githubusercontent.com/fengyuan2333/Script/weibo.js
+# 微博超话签到
+cron "0 9 * * *" script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js
 
 # 获取Cookie
-http-request ^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) script-path=https://raw.githubusercontent.com/fengyuan2333/Script/weibo.js
+http-request ^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js
 
 [Mitm]
 hostname= api.weibo.cn
