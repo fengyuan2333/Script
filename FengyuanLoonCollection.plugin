@@ -75,4 +75,4 @@ cron {wb_cron1} script-path=https://raw.githubusercontent.com/fengyuan2333/Scrip
 
 
 [MITM]
-hostname = app.bilibili.com, m.bilibili.com, hope.demogic.com, passport.iqiyi.com, *.amap.com, auth.alipan.com, auth.aliyundrive.com
+hostname = app.bilibili.com, m.bilibili.com, hope.demogic.com, passport.iqiyi.com, *.amap.com, auth.alipan.com, auth.aliyundrive.com, api.weibo.cn
