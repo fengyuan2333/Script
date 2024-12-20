@@ -200,10 +200,10 @@ while(isskip==false){
                         var action=topics[key]['sign_action'];
                         var title=topics[key]['title'];
                         var message=await sign_topic(title,action,jsonParams2['str']);
-                        // console.log('延迟测试3秒');
-                        // sleep(3000);
-                        // $nobyda.wait(3000);
-                        // console.log('3秒完成');
+                        console.log('延迟测试2秒');
+
+                        $nobyda.sleep(2000);
+                        console.log('2秒完成');
                         message_to_push += message+'\n';
                     }
                 }
@@ -429,7 +429,7 @@ console.log(output);
 
 
         }else{
-            console.log('出现错误');
+            console.log('获取超话列表出现错误');
             console.log(response);
         }
         // return '1';
@@ -664,6 +664,15 @@ function nobyda() {
   }
 
 
+  const sleep = (delay)=> {
+    var start = (new Date()).getTime();
+    while((new Date()).getTime() - start < delay) {
+      // console.log('测试212');
+        continue;
+    }
+}
+
+
 
   const done = (value = {}) => {
     if (isQuanX) return $done(value)
@@ -681,18 +690,11 @@ function nobyda() {
     time,
     times,
       wait,
+      sleep,
     done
   }
 };
 
-function sleep(delay) {
-    var start = (new Date()).getTime();
-    console.log('测试');
-    while((new Date()).getTime() - start < delay) {
-      console.log('测试212');
-        continue;
-    }
-}
 
 
 function urlParamsToJson(url) {
