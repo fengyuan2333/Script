@@ -1,0 +1,78 @@
+#!name=风原-签到任务
+#!desc=定时任务及Cookie获取,cookie取完及时关闭，避免Mitm占用资源
+#!author= fengyuan2333
+#!homepage= https://github.com/fengyuan2333/Script
+#!icon=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/logo.png
+#!category= MK
+
+
+
+[Argument]
+
+#参数变量名 = 类型,"参数值1","参数值2",tag=参数在UI上显示的名字,desc=参数在UI上显示详细介绍
+cron1=input,"0 9 * * *",tag=1-b站签到定时参数
+bt=switch,true,tag=1-开启b站自动签到（填写定时参数）
+arg1=switch,true,tag=1-捕获B站Cookie(APP)
+arg2=switch,true,tag=1-捕获B站Cookie(网页)
+
+hx_cron1=input,"0 9 * * *",tag=2-鸿星尔克签到定时参数
+hxek_qd=switch,true,tag=2-开启鸿星尔克自动签到（填写定时参数）
+hxer_cookie=switch,true,tag=2-捕获鸿星尔克Cookie
+
+iqy_cron1=input,"0 9 * * *",tag=3-爱奇艺签到定时参数
+iqy_qd=switch,true,tag=3-开启爱奇艺自动签到（填写定时参数）
+iqy_cookie=switch,true,tag=3-捕获爱奇艺Cookie
+
+bilim_cron1=input,"0 9 * * *",tag=4-bili漫画定时参数
+bilim_qd=switch,true,tag=4-开启bili漫画自动签到（填写定时参数）
+bilim_cookie=switch,true,tag=4-捕获bili漫画Cookie
+
+gd_cron1=input,"0 9 * * *",tag=5-高德定时参数
+gd_qd=switch,true,tag=5-开启高德打车自动签到（填写定时参数）
+gd_cookie=switch,true,tag=5-捕获高德打车Cookie
+
+alip_cron1=input,"0 9 * * *",tag=6-阿里网盘定时参数
+alip_qd=switch,true,tag=6-开启阿里网盘自动签到（填写定时参数）
+alip_cookie=switch,true,tag=6-捕获阿里网盘Cookie
+
+wb_cron1=input,"0 9 * * *",tag=7-微博超话签到定时参数
+wb_qd=switch,true,tag=7-开启微博超话自动签到（填写定时参数）
+wb_cookie=switch,true,tag=7-捕获微博超话Cookie
+
+
+[Script]
+# BiliBili每日等级任务
+#cron "30 7 * * *" script-path=https://raw.githubusercontent.com/ClydeTime/BiliBili/main/js/BiliBiliDailyBonus.js, tag=1-B站每日等级任务
+cron {cron1} script-path=https://raw.githubusercontent.com/ClydeTime/BiliBili/main/js/BiliBiliDailyBonus.js, tag=1-B站每日等级任务,enable={bt}
+http-request ^https?:\/\/app\.bilibili\.com\/x\/resource\/fingerprint\? script-path=https://raw.githubusercontent.com/ClydeTime/BiliBili/main/js/BiliBiliDailyBonus.js, tag=1-捕获B站Cookie(APP),enable={arg1}
+http-request ^https?:\/\/m.bilibili.com/$ script-path=https://raw.githubusercontent.com/ClydeTime/BiliBili/main/js/BiliBiliDailyBonus.js, tag=1-捕获B站Cookie(网页),enable={arg2}
+
+#鸿星尔克小程序签到
+cron {hx_cron1} script-path=https://raw.githubusercontent.com/Former-Years/Surge/refs/heads/main/Script/erke.js, tag=2-鸿星尔克签到,enable={hxek_qd}
+http-request ^https:\/\/hope\.demogic\.com\/gic-wx-app\/get-member-asset\.json script-path=https://raw.githubusercontent.com/Former-Years/Surge/refs/heads/main/Script/erke.js, tag=2-捕获鸿星尔克Cookie,enable={hxer_cookie}
+
+# 爱奇艺签到
+cron {iqy_cron1} script-path=https://raw.githubusercontent.com/NobyDa/Script/master/iQIYI-DailyBonus/iQIYI.js, tag=3-爱奇艺签到,enable={iqy_qd}
+# 获取Cookie
+http-request ^https:\/\/passport\.iqiyi\.com\/apis\/user\/ script-path=https://raw.githubusercontent.com/NobyDa/Script/master/iQIYI-DailyBonus/iQIYI.js, tag=3-捕获爱奇艺Cookie,enable={iqy_cookie}
+
+#bili漫画签到
+cron {bilim_cron1} script-path=https://raw.githubusercontent.com/NobyDa/Script/master/Bilibili-DailyBonus/Manga.js, tag=4-bili漫画签到,enable={bilim_qd}
+http-request ^https:\/\/app\.bilibili\.com\/x\/v2\/account\/myinfo script-path=https://raw.githubusercontent.com/NobyDa/Script/master/Bilibili-DailyBonus/Manga.js, tag=4-捕获bili漫画Cookie,enable={bilim_cookie}
+
+#高德地图打车签到
+cron {gd_cron1} script-path=https://raw.githubusercontent.com/wf021325/qx/master/task/ampDache.js, tag=5-高德地图打车签到,enable={gd_qd}
+http-response ^https?:\/\/(m5(|-zb)|dache)\.amap\.com\/(ws\/yuece\/(act|openapi\/activity\/current)\/query|common\/(alipaymini|wxmini)\?_ENCRYPT=) script-path=https://raw.githubusercontent.com/wf021325/qx/master/task/ampDache.js, requires-body=true, enabled=false, tag=5-捕获高德打车签到cookies,enable={gd_cookie}
+
+#阿里网盘签到
+cron {alip_cron1} script-path=https://raw.githubusercontent.com/zqzess/rule_for_quantumultX/master/js/Mine/aDriveCheckIn/aDriveCheckIn.js, tag=6-阿里网盘签到,enable={alip_qd}
+http-request ^https:\/\/(auth|aliyundrive)\.alipan\.com\/v2\/account\/token script-path=https://raw.githubusercontent.com/zqzess/rule_for_quantumultX/master/js/Mine/aDriveCheckIn/aDriveCheckIn.js, requires-body=true, timeout=10, enabled=true, tag=6-捕获阿里网盘token,enable={alip_cookie}
+
+#微博超话签到
+cron {wb_cron1} script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, tag=7-微博超话签到,enable={wb_qd}
+^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, requires-body=true, timeout=50, enabled=true, tag=7-捕获微博超话cookie,enable={wb_cookie}
+
+
+
+[MITM]
+hostname = app.bilibili.com, m.bilibili.com, hope.demogic.com, passport.iqiyi.com, *.amap.com, auth.alipan.com, auth.aliyundrive.com
