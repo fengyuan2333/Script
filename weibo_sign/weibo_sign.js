@@ -209,10 +209,7 @@ while(isskip==false){
                         var action=topics[key]['sign_action'];
                         var title=topics[key]['title'];
                         var message=await sign_topic(title,action,jsonParams2['str']);
-                        console.log('延迟测试2秒');
-
-                        $nobyda.sleep(2000);
-                        console.log('2秒完成');
+                        $nobyda.sleep(1000);
                         message_to_push += message+'\n';
                     }
                 }
