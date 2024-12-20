@@ -66,11 +66,11 @@ http-response ^https?:\/\/(m5(|-zb)|dache)\.amap\.com\/(ws\/yuece\/(act|openapi\
 
 #阿里网盘签到
 cron {alip_cron1} script-path=https://raw.githubusercontent.com/zqzess/rule_for_quantumultX/master/js/Mine/aDriveCheckIn/aDriveCheckIn.js, tag=6-阿里网盘签到,enable={alip_qd}
-http-request ^https:\/\/(auth|aliyundrive)\.alipan\.com\/v2\/account\/token script-path=https://raw.githubusercontent.com/zqzess/rule_for_quantumultX/master/js/Mine/aDriveCheckIn/aDriveCheckIn.js, requires-body=true, timeout=10, enabled=true, tag=6-捕获阿里网盘token,enable={alip_cookie}
+http-request ^https:\/\/(auth|aliyundrive)\.alipan\.com\/v2\/account\/token script-path=https://raw.githubusercontent.com/zqzess/rule_for_quantumultX/master/js/Mine/aDriveCheckIn/aDriveCheckIn.js, timeout=10, enabled=true, tag=6-捕获阿里网盘token,enable={alip_cookie}
 
 #微博超话签到
 cron {wb_cron1} script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, tag=7-微博超话签到,enable={wb_qd}
-http-request ^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, requires-body=true, timeout=50, enabled=true, tag=7-捕获微博超话cookie,enable={wb_cookie}
+http-request ^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, timeout=50, enabled=true, tag=7-捕获微博超话Cookie,enable={wb_cookie}
 
 
 
