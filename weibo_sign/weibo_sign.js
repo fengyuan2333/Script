@@ -149,7 +149,9 @@ var isskip=false;
 if (username_return['issuccess']==true){
     username=username_return['username'];
 
+
 }else{
+    isskip=true;
     break;
 
 }
@@ -166,7 +168,7 @@ headers1['Authorization']=generate_authorization(jsonParams['json']);
 var jsonParams2=ParamsJsonUpdate(jsonParams);
 
 
-while(true && isskip==true){
+while(isskip==false){
 
                 // # 重置 output 为空字符串
                 var output = "";
