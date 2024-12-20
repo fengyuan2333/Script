@@ -36,30 +36,31 @@ JsBox, Node.js用户获取Cookie说明：
 
 let API_URL = "https://api.weibo.cn/2/cardlist";
 let SIGN_URL = "https://api.weibo.cn/2/page/button";
-// let headers1 = {
-//     "Accept": "*/*",
-//     "User-Agent": "Weibo/81434 (iPhone; iOS 17.0; Scale/3.00)",
-//     "SNRT": "normal",
-//     "X-Sessionid": "6AFD786D-9CFA-4E18-BD76-60D349FA8CA2",
-//     // "Accept-Encoding": "gzip, deflate",
-//     "Accept-Encoding": "",
-//     "X-Validator": "QTDSOvGXzA4i8qLXMKcdkqPsamS5Ax1wCJ42jfIPrNA=",
-//     "Host": "api.weibo.cn",
-//     "x-engine-type": "cronet-98.0.4758.87",
-//     "Connection": "keep-alive",
-//     "Accept-Language": "en-US,en",
-//     "cronet_rid": "6524001",
-//     "Authorization": "",
-//     "X-Log-Uid": "5036635027",
+let headers1 = {
+    "Accept": "*/*",
+    "User-Agent": "Weibo/81434 (iPhone; iOS 17.0; Scale/3.00)",
+    "SNRT": "normal",
+    "X-Sessionid": "6AFD786D-9CFA-4E18-BD76-60D349FA8CA2",
+    // "Accept-Encoding": "gzip, deflate",
+    "Accept-Encoding": "",
+    "X-Validator": "QTDSOvGXzA4i8qLXMKcdkqPsamS5Ax1wCJ42jfIPrNA=",
+    "Host": "api.weibo.cn",
+    "x-engine-type": "cronet-98.0.4758.87",
+    "Connection": "keep-alive",
+    "Accept-Language": "en-US,en",
+    "cronet_rid": "6524001",
+    "Authorization": "",
+    "X-Log-Uid": "5036635027",
+};
+//
+// let headers1={  'sec-fetch-dest':'document',
+//     'accept-language':'zh-CN,zh-Hans;q=0.9',
+//     'user-agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
+//     'accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+//     'accept-encoding':'gzip, deflate',
+//     'sec-fetch-site':'none',
+//     'sec-fetch-mode':'navigate',
 // };
-
-let headers1={  'sec-fetch-dest':'document',
-    'accept-language':'zh-CN,zh-Hans;q=0.9',
-    'user-agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
-    'accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'accept-encoding':'gzip, deflate, br',
-    'sec-fetch-site':'none',
-    'sec-fetch-mode':'navigate'};
 
 var cookie='';
 
@@ -169,7 +170,7 @@ if (username_return['issuccess']==true){
 
 var since_id=await get_since_id(jsonParams['str']);
 
-jsonParams['json']['count']='1000';
+jsonParams['json']['count']='100';
 jsonParams['json']['page']='1';
 headers1['Authorization']=generate_authorization(jsonParams['json']);
 
@@ -304,6 +305,7 @@ function get_username_wait(params){
         taskListMsg = `${e.message || e} ‼️`;
         console.log('错误');
         console.log(taskListMsg);
+        console.log(response);
       }
 
         console.log('用户名:'+username1);
