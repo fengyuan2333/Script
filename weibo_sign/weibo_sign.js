@@ -136,7 +136,7 @@ var $nobyda = nobyda();
 var succeeded=false;
 var jsonParams = urlParamsToJson(cookie);
 var username='';
-var username_return='';
+var username_return={'issuccess':false};
 
 var message_to_push = "";
 while (succeeded==false){
@@ -154,7 +154,7 @@ if (username_return['issuccess']==true){
 
 }
 
-username= await get_username_wait(jsonParams['str']);
+// username= await get_username_wait(jsonParams['str']);
 
 
 var since_id=await get_since_id(jsonParams['str']);
