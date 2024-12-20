@@ -361,6 +361,7 @@ function get_topics(params){
         url:API_URL+'?'+params,
             headers:headers1
     }
+
      $nobyda.get(URL, function (errormsg, response, data) {
          // console.log(response.statusCode);
          // console.log(11);
@@ -430,7 +431,15 @@ console.log(output);
 
         }else{
             console.log('获取超话列表出现错误');
+            // console.log(response);
+
             console.log(response);
+            console.log('response===========');
+
+            console.log(data);
+            console.log('data==============');
+
+
         }
         // return '1';
         //  console.log('超话列表获取出错');
