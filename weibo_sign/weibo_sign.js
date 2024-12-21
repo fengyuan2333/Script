@@ -175,12 +175,13 @@ if (username_return['issuccess']==true){
 // username= await get_username_wait(jsonParams['str']);
 
 
-var since_id=await get_since_id(jsonParams['str']);
+// var since_id=await get_since_id(jsonParams['str']);
 
-jsonParams['json']['count']='100';
+// jsonParams['json']['count']='100';
 jsonParams['json']['page']='1';
-headers1['Authorization']=generate_authorization(jsonParams['json']);
 
+headers1['Authorization']=generate_authorization(jsonParams['json']);
+jsonParams['json']['since_id']='';
 var jsonParams2=ParamsJsonUpdate(jsonParams);
 
 
@@ -188,24 +189,47 @@ while(isskip==false){
 
                 // # 重置 output 为空字符串
                 var output = "";
-                // # 假设您有一个函数 get_topics 来获取主题列表
+
+                var page=0;
+                var since_id11='123';
+                var topics_count=[];
+
+                while (since_id11 != '' ){
+
+                    page++;
+                console.log('正在请求第'+page+'页');
+                                    // # 假设您有一个函数 get_topics 来获取主题列表
                 var ii=0;
                 var topics='';
-                topics = await get_topics(jsonParams2['str'], headers1);
-                while(topics=='获取失败' && ii <=retry){
+
+                topics = await get_topics(jsonParams2['str']+'&since_id='+since_id11, headers1);
+// {'msg':'获取失败','topic':[],'since_id':''}
+                while(topics['msg']=='获取失败' && ii <=retry){
                     ii++;
-                    console.log('获取失败，预计重试'+retry+'次,准备'+retry_time/1000+'秒后第'+ii+'次重试');
+                    console.log('第'+page+'页获取失败，预计重试'+retry+'次,准备'+retry_time/1000+'秒后第'+ii+'次重试');
                     $nobyda.sleep(retry_time);
                     console.log('开始重试');
-                    topics = await get_topics(jsonParams2['str'], headers1);
+                    topics = await get_topics(jsonParams2['str'].replace('page=1','page='+page), headers1);
 
                 }
+                // listcount=topics['topic'].length;
+                // console.log(listcount);
+
+                topics_count=[...topics_count,...topics['topic']];
+
+                since_id11=topics['since_id'];
+                // console.log(since_id11);
+
+                }
+
+                console.log('获取完成,总共超话【'+topics_count.length+'】个');
+
 
 
                 // console.log(topics);
                 var isjump=false;
-                for (let key in topics) {
-                    if(topics[key]['sign_action']!=null){
+                for (let key in topics_count) {
+                    if(topics_count[key]['sign_action']!=null){
                         // console.log(topics[key]);
                         // console.log('说明需要签到，不跳过');
                         isjump=true;
@@ -218,15 +242,15 @@ while(isskip==false){
                     // console.log('跳过了');
                     break;
                 }
-                for (let key in topics) {
-                    output +='超话标题:'+topics[key]['title']+"状态:"+topics[key]['sign_status'];
+                for (let key in topics_count) {
+                    output +='超话标题:'+topics_count[key]['title']+"状态:"+topics_count[key]['sign_status'];
                 }
                 // console.log(111);
-                for (let key in topics) {
-                    if(topics[key]['sign_action']!=null){
+                for (let key in topics_count) {
+                    if(topics_count[key]['sign_action']!=null){
                         // console.log('进入签到================')
-                        var action=topics[key]['sign_action'];
-                        var title=topics[key]['title'];
+                        var action=topics_count[key]['sign_action'];
+                        var title=topics_count[key]['title'];
 
 
                         var ii=0;
@@ -272,7 +296,7 @@ console.log(message_to_push);
 
 
 if(username_return['issuccess']){
-    $nobyda.notify("微博超话签到执行完成", "用户名："+username, '成功签到【'+message_to_push_count+'】个超话\n'+message_to_push);
+    $nobyda.notify("微博超话签到执行完成", '@'+username+',超话【'+topics_count.length+'】个', '成功签到【'+message_to_push_count+'】个超话\n'+message_to_push);
 }else{
     $nobyda.notify("微博超话签到执行失败", '', username_return['errmsg']);
 }
@@ -364,19 +388,24 @@ function get_since_id(params, headers){
 
     $nobyda.get(URL, function (error, response, data) {
     var username='';
-
+    var obj={};
       const Details = LogDetails ? `msg:\n${data || error}` : '';
       try {
         if (error) throw new Error(`请求失败`);
 
-        const obj = JSON.parse(data);
-
+        obj = JSON.parse(data);
+        console.log('测试obj');
+        console.log(obj);
       } catch (e) {
         // taskListMsg = `${e.message || e} ‼️`;
         console.log('错误');
         console.log(taskListMsg);
       }
-        // console.log('since_id 完成');
+        console.log('since_id 完成');
+      var since_id = obj["cardlistInfo"]["since_id"];
+
+      console.log(since_id);
+
       resolve();
     })
   })
@@ -406,16 +435,16 @@ function get_topics(params){
     }
 
      $nobyda.get(URL, function (error, response, data) {
-
+        var since_id1='';
         if(error !== null){
             console.log('获取失败error测试');
             console.log(error);
-            resolve('获取失败');
+            resolve({'msg':'获取失败','topic':[],'since_id':''});
         }else if (response.statusCode== 200) {
             var datas=JSON.parse(data);
             var cards=datas['cards'];
 
-
+            since_id1=datas['cardlistInfo']['since_id'];
             var topics = [];
             for (let key in cards) {
                 if  (cards[key]['card_type']=='11'){
@@ -470,7 +499,7 @@ function get_topics(params){
 console.log(output);
 
             // return topics;
-            resolve(topics);
+            resolve({'msg':'获取成功','topic':topics,'since_id':since_id1});
 
 
         }else{
@@ -488,7 +517,7 @@ console.log(output);
         }
         // return '1';
         //  console.log('超话列表获取出错');
-        resolve('获取失败');
+        resolve({'msg':'获取失败','topic':[],'since_id':''});
     });
 
 
@@ -553,10 +582,11 @@ function sign_topic(title, action, params) {
 
 
 function GetCookie() {
-  if (!$request.url.includes("weibo.cn")) {
-    $nobyda.notify(`写入微博Cookie失败`, "", "请更新脚本配置(URL正则/MITM)");
+  if (!$request.url.includes("weibo.cn") || $request.url.includes("fid=")) {
+    // $nobyda.notify(`写入微博Cookie失败`, "", "请更新脚本配置(URL正则/MITM)");
     return
   }
+
   var CKA = $request.url;//当前请求cookie
   var Weibo = CKA && CKA.includes("gsid=") && CKA;//看cookie是否包含值
   var RA = $nobyda.read("CookieWeiBo")//老的cookie
