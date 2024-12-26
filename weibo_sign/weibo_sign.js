@@ -70,7 +70,7 @@ var barkServer = ''; //Bark APP 通知服务端地址(默认官方)
 
 var retry=5;//失败时重试次数;
 var retry_time=1000//重试间隔,单位:ms;
-var sign_time=500//超话签到间隔,单位ms;
+var sign_time=100//超话签到间隔,单位ms;
 /*********************
 QuantumultX 远程脚本配置:
 **********************
@@ -296,7 +296,7 @@ console.log(message_to_push);
 
 
 if(username_return['issuccess']){
-    $nobyda.notify("微博超话签到执行完成", '@'+username+',超话【'+topics_count.length+'】个', '成功签到【'+message_to_push_count+'】个超话\n'+message_to_push);
+    $nobyda.notify("微博超话签到执行完成", '@'+username+',总超话【'+topics_count.length+'】个', '全部签到完成，本次签到【'+message_to_push_count+'】个超话\n'+message_to_push);
 }else{
     $nobyda.notify("微博超话签到执行失败", '', username_return['errmsg']);
 }
