@@ -39,6 +39,9 @@ wb_cron1=input,"0 9 * * *",tag=7-微博超话签到定时参数
 wb_qd=switch,true,tag=7-开启微博超话自动签到（填写定时参数）
 wb_cookie=switch,true,tag=7-捕获微博超话Cookie
 
+sanjiang_cron1=input,"0 9 * * *",tag=8-三江签到定时参数
+sanjiang_qd=switch,true,tag=8-开启三江自动签到（填写定时参数）
+sanjiang_cookie=switch,true,tag=8-捕获三江Cookie
 
 [Script]
 # BiliBili每日等级任务
@@ -72,7 +75,10 @@ http-request ^https:\/\/(auth|aliyundrive)\.alipan\.com\/v2\/account\/token scri
 cron {wb_cron1} script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, tag=7-微博超话签到,enable={wb_qd}
 http-request ^https?://m?api\.weibo\.c(n|om)\/2\/(cardlist) script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/weibo_sign/weibo_sign.js, timeout=2000, enabled=true, tag=7-捕获微博超话Cookie,enable={wb_cookie}
 
+#三江签到
+cron {sanjiang_cron1} script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/sanjiang_sign/sanjiang_sign.js, tag=8-三江签到,enable={sanjiang_qd}
+http-request ^https?://app\.sanjiang\.com\/users\/userInfo script-path=https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/sanjiang_sign/sanjiang_sign.js, timeout=2000, enabled=true, tag=8-捕获三江超话Cookie,enable={sanjiang_cookie}
 
 
 [MITM]
-hostname = app.bilibili.com, m.bilibili.com, hope.demogic.com, passport.iqiyi.com, *.amap.com, auth.alipan.com, auth.aliyundrive.com, api.weibo.cn
+hostname = app.bilibili.com, m.bilibili.com, hope.demogic.com, passport.iqiyi.com, *.amap.com, auth.alipan.com, auth.aliyundrive.com, api.weibo.cn, api.sanjiang.com
