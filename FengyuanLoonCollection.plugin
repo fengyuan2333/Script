@@ -81,4 +81,4 @@ http-request ^https?://app\.sanjiang\.com\/users\/userInfo script-path=https://r
 
 
 [MITM]
-hostname = app.bilibili.com, m.bilibili.com, hope.demogic.com, passport.iqiyi.com, *.amap.com, auth.alipan.com, auth.aliyundrive.com, api.weibo.cn, api.sanjiang.com
+hostname = app.bilibili.com, m.bilibili.com, hope.demogic.com, passport.iqiyi.com, *.amap.com, auth.alipan.com, auth.aliyundrive.com, api.weibo.cn, app.sanjiang.com
