@@ -154,7 +154,8 @@ if (username_return['issuccess']==true && sign_return['issuccess']==true){
     succeeded=true;
     break
 }else{
-console.log('失败');
+console.log('失败，请检查cookie');
+break;
 
 }
 
