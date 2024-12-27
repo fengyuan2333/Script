@@ -143,11 +143,10 @@ var headersQ=headers1;
 headersQ['x-auth-token']=cookie;
 while (succeeded==false && loperror<=retry){
     try {
-
-
-
+        
         var username_return= await get_username_wait(headersQ);
         var sign_return= await get_sign(headersQ);
+
 
 if (username_return['issuccess']==true && sign_return['issuccess']==true){
     username=username_return['username'];
@@ -189,7 +188,7 @@ console.log(sign_return['data']);
 if(username_return['issuccess']){
     $nobyda.notify("三江购物签到执行完成", '@'+username,sign_return['data'] );
 }else{
-    $nobyda.notify("三江购物签到执行失败", '', username_return['errmsg']);
+    $nobyda.notify("三江购物签到执行失败", '', username_return);
 }
 
         await $nobyda.time();
@@ -253,10 +252,11 @@ function get_username_wait(headerss){
 
 
         if (error || response.statusCode !=200){
-             throw new Error(`请求失败`+data);
-             resolve();
-        }
+             throw new Error(`请求失败1`+data);
 
+             // resolve(data);
+        }
+        console.log('========================123')
         const obj = JSON.parse(data);
             try{
                 username1=obj['data']['username'];
@@ -277,7 +277,8 @@ function get_username_wait(headerss){
         taskListMsg = `${e.message || e} ‼️`;
         console.log('错误');
         console.log(taskListMsg);
-        console.log(response);
+        resolve(data);
+        // console.log(response);
       }
 
 
@@ -331,7 +332,7 @@ function get_sign(headerss){
         taskListMsg = `${e.message || e} ‼️`;
         console.log('错误');
         console.log(taskListMsg);
-        console.log(response);
+        // console.log(response);
       }
 
 
