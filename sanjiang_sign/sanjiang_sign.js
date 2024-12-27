@@ -43,7 +43,7 @@ QuantumultX 远程脚本配置:
 ^https?://app\.sanjiang\.com\/users\/userInfo url script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/sanjiang_sign/sanjiang_sign.js
 
 [mitm]
-hostname= api.sanjiang.com
+hostname= app.sanjiang.com
 
 **********************
 Surge 4.2.0+ 脚本配置:
@@ -54,7 +54,7 @@ Surge 4.2.0+ 脚本配置:
 三江获取Cookie = type=http-request,pattern=^https?://app\.sanjiang\.com\/users\/userInfo,script-path=script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/sanjiang_sign/sanjiang_sign.js
 
 [MITM]
-hostname= api.sanjiang.com
+hostname= app.sanjiang.com
 
 ************************
 Loon 2.1.0+ 脚本配置:
@@ -67,7 +67,7 @@ cron "0 9 * * *" script-path=^https?://app\.sanjiang\.com\/users\/userInfo,scrip
 # 获取Cookie
 http-request ^https?://app\.sanjiang\.com\/users\/userInfo script-path=^https?://app\.sanjiang\.com\/users\/userInfo,script-path=script-request-header https://raw.githubusercontent.com/fengyuan2333/Script/refs/heads/main/sanjiang_sign/sanjiang_sign.js
 [Mitm]
-hostname= api.sanjiang.com
+hostname= app.sanjiang.com
 
 */
 
