@@ -59,13 +59,19 @@ function loadCache() {
   }
 }
 
-// 比较两个超话列表是否完全一致
+// 比较两个超话列表是否一致(只比对标题)
 function compareTopicLists(list1, list2) {
   if (!list1 || !list2 || list1.length !== list2.length) return false;
   return list1.every((topic, index) => 
-    topic.title === list2[index].title && 
-    topic.desc === list2[index].desc
+    topic.title === list2[index].title
   );
+}
+
+// 提取超话标题列表
+function extractTopicTitles(topics) {
+  return topics.map(topic => ({
+    title: topic.title
+  }));
 }
 
 // 使用缓存的索引链接并发获取超话列表
@@ -78,6 +84,8 @@ async function getTopicsWithCache() {
     acc.concat(curr.topic), []
   );
 }
+
+
 let SIGN_URL = "https://api.weibo.cn/2/page/button";
 let headers1 = {
     "Accept": "*/*",
@@ -240,9 +248,13 @@ while(isskip==false){
                 // 获取第一页数据
                 const firstPageTopics = await get_topics(jsonParams2['str'], headers1);
                 
+                // 提取纯标题信息用于比对
+                const firstPageTitles = extractTopicTitles(firstPageTopics.topic);
+                const cachedTitles = cache.firstPageTopics.length > 0 ? 
+                  extractTopicTitles(cache.firstPageTopics) : [];
+
                 // 检查缓存是否有效
-                if (cache.firstPageTopics.length > 0 && 
-                    compareTopicLists(firstPageTopics.topic, cache.firstPageTopics)) {
+                if (cachedTitles.length > 0 && compareTopicLists(firstPageTitles, cachedTitles)) {
                   console.log('使用缓存的索引链接并发获取超话列表...');
                   topics_count = await getTopicsWithCache();
                 } else {
