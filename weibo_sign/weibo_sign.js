@@ -5,7 +5,10 @@
 微博超话签到脚本1
 作者：fengyuan2333
 github:https://github.com/fengyuan2333
-更新时间: 2024/12/20
+更新时间: 2025/03/09
+更新说明：
+1、增加了并发处理，大大提升效率。
+
 脚本兼容: QuantumultX, Surge4, Loon, JsBox, Node.js
 
 
@@ -16,7 +19,7 @@ ios打开微博轻享版，并点到超话界面，提示保存cookie成功即�
 
 脚本将在每天上午9:00执行, 您可以修改执行时间。
 
-如果使用Node.js, 需自行安装'request'模块. 例: npm install request -g
+如果使用Node.js, 需自行安装'request'模块. 例: npm install request -g 和 npm install --save node-localstorage
 
 Node.js环境变量相关：
 Cookie：IQIYI_COOKIE
@@ -274,12 +277,9 @@ while(isskip==false){
                     cache.pageIndexLinks.push(currentLink);
                     
                     topics = await get_topics(currentLink, headers1);
-                    while(topics['msg']=='获取失败' && ii <= retry){
-                      ii++;
-                      console.log('第'+page+'页获取失败，预计重试'+retry+'次,准备'+retry_time/1000+'秒后第'+ii+'次重试');
-                      $nobyda.sleep(retry_time);
-                      console.log('开始重试');
-                      topics = await get_topics(jsonParams2['str'].replace('page=1','page='+page), headers1);
+                    if (topics['msg'] == '获取失败') {
+                      console.log('第'+page+'页获取失败');
+                      break;
                     }
                     
                     topics_count = [...topics_count, ...topics['topic']];
@@ -467,115 +467,99 @@ function get_since_id(params, headers){
 
 
 
+
 }
 
 
 
 
-// # 获取超话列表
-function get_topics(params){
+// # 获取超话列表1
+function get_topics(params, maxRetries = 3) {
+    let retryCount = 0;
+    const baseDelay = 1000; // 基础延迟时间（毫秒）
 
-    return new Promise(resolve => {
+    return new Promise(async (resolve) => {
+        const attemptFetch = async () => {
+            var URL = {
+                url: API_URL + '?' + params,
+                headers: headers1
+            }
 
-
-        var URL={
-        url:API_URL+'?'+params,
-            headers:headers1
-    }
-
-     $nobyda.get(URL, function (error, response, data) {
-        var since_id1='';
-        if(error !== null){
-            console.log('获取失败error测试');
-            console.log(error);
-            resolve({'msg':'获取失败','topic':[],'since_id':''});
-        }else if (response.statusCode== 200) {
-            var datas=JSON.parse(data);
-            var cards=datas['cards'];
-
-            since_id1=datas['cardlistInfo']['since_id'];
-            var topics = [];
-            for (let key in cards) {
-                if  (cards[key]['card_type']=='11'){
-                    var card_group = cards[key]["card_group"];
-                    for (let key in card_group) {
-
-                        if(card_group[key]['card_type']=='8'){
-                            var sign_action = null;
-
-
-                            // console.log('看次数===========================');
-                            if (card_group[key]['buttons'].length>0){
-                                var button=card_group[key]["buttons"][0];
-                                if(button['params']){
-
-                                    var sign_action=button["params"]["action"];
-                                }
-                                else{
-
-                                    button['params'];
-                                }
-
-                            }
-                        var topic={
-                        "title": card_group[key]["title_sub"],
-                        "desc": card_group[key]["desc1"],
-                        // "sign_status": item.get("buttons", [{}])[0].get("name", ""),
-                        "sign_status": card_group[key]["buttons"][0]['name'],
-                        "sign_action": sign_action
-
-                        }
-                        topics.push(topic);
-
-                        }
-
+            $nobyda.get(URL, function (error, response, data) {
+                var since_id1 = '';
+                if (error !== null) {
+                    console.log('获取失败，错误信息：', error);
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        const delay = baseDelay * Math.pow(2, retryCount - 1);
+                        console.log(`第${retryCount}次重试，等待${delay}ms...`);
+                        setTimeout(attemptFetch, delay);
+                        return;
                     }
-
-
+                    resolve({'msg': '获取失败', 'topic': [], 'since_id': ''});
+                    return;
+                } else if (response.statusCode == 200) {
+                    try {
+                        var datas = JSON.parse(data);
+                        var cards = datas['cards'];
+                        since_id1 = datas['cardlistInfo']['since_id'];
+                        var topics = [];
+                        for (let key in cards) {
+                            if (cards[key]['card_type'] == '11') {
+                                var card_group = cards[key]["card_group"];
+                                for (let key2 in card_group) {
+                                    if (card_group[key2]['card_type'] == '8') {
+                                        var sign_action = null;
+                                        if (card_group[key2]['buttons'].length > 0) {
+                                            var button = card_group[key2]["buttons"][0];
+                                            if (button['params']) {
+                                                sign_action = button["params"]["action"];
+                                            }
+                                        }
+                                        var topic = {
+                                            "title": card_group[key2]["title_sub"],
+                                            "desc": card_group[key2]["desc1"],
+                                            "sign_status": card_group[key2]["buttons"][0]['name'],
+                                            "sign_action": sign_action
+                                        }
+                                        topics.push(topic);
+                                    }
+                                }
+                            }
+                        }
+                        var output = '';
+                        for (let key in topics) {
+                            output += '超话标题:' + topics[key]['title'] + ',状态:' + topics[key]['sign_status'] + '\n';
+                        }
+                        console.log(output);
+                        resolve({'msg':'获取成功','topic':topics,'since_id':since_id1});
+                    } catch (error) {
+                        console.error('解析数据时出现错误:', error);
+                        if (retryCount < maxRetries) {
+                            retryCount++;
+                            const delay = baseDelay * Math.pow(2, retryCount - 1);
+                            console.log(`第${retryCount}次重试，等待${delay}ms...`);
+                            setTimeout(attemptFetch, delay);
+                            return;
+                        }
+                        resolve({'msg': '获取失败', 'topic': [], 'since_id': ''});
+                    }
+                } else {
+                    console.log('获取超话列表出现错误，状态码：', response.statusCode);
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        const delay = baseDelay * Math.pow(2, retryCount - 1);
+                        console.log(`第${retryCount}次重试，等待${delay}ms...`);
+                        setTimeout(attemptFetch, delay);
+                        return;
+                    }
+                    resolve({'msg': '获取失败', 'topic': [], 'since_id': ''});
                 }
-
-            }
-
-            var output='';
-            for (let key in topics) {
-            // output += "超话标题:'{}'，状态:'{}'\n".format(topic["title"], topic["sign_status"])
-                output+='超话标题:'+topics[key]['title']+',状态:'+topics[key]['sign_status']+'\n';
-
-            }
-
-            // console.log('超话状态');
-            // console.log(topics);
-console.log(output);
-
-            // return topics;
-            resolve({'msg':'获取成功','topic':topics,'since_id':since_id1});
-
-
-        }else{
-
-            console.log('获取超话列表出现错误，建议重试');
-            // console.log(response);
-
-            // console.log(response);
-            // console.log('response===========');
-
-            console.log(data);
-            console.log('data==============');
-
-
+            });
         }
-        // return '1';
-        //  console.log('超话列表获取出错');
-        resolve({'msg':'获取失败','topic':[],'since_id':''});
+        attemptFetch();
     });
-
-
-
-     })
-
-
 }
-
 // # 超话签到
 function sign_topic(title, action, params) {
   return new Promise((resolve, reject) => {
@@ -640,12 +624,12 @@ function sign_topic(title, action, params) {
 }
 
 // 批量并发签到
-async function batchSignTopics(topics, params, batchSize = 5) {
+async function batchSignTopics(topics, params, batchSize = 40) {
     // 动态调整批次大小，根据失败率自适应
     let dynamicBatchSize = batchSize;
     let failureRate = 0;
     const MIN_BATCH_SIZE = 2;
-    const MAX_BATCH_SIZE = 8;
+    const MAX_BATCH_SIZE = 50;
 
     // 过滤出需要签到的超话
     const topicsToSign = topics.filter(topic => topic.sign_action !== null);
@@ -699,7 +683,7 @@ async function batchSignTopics(topics, params, batchSize = 5) {
         }
         
         // 根据失败率动态调整请求间隔
-        const delayTime = failureRate > 0.2 ? 2000 : 1000;
+        const delayTime = failureRate > 0.2 ? 2000 : 100;
         if (processedCount + dynamicBatchSize < topicsToSign.length) {
             await new Promise(resolve => setTimeout(resolve, delayTime));
         }
@@ -803,8 +787,11 @@ function nobyda() {
   const node = (() => {
     if (isNode) {
       const request = require('request');
+      const LocalStorage = require('node-localstorage').LocalStorage;
+      const localStorage = new LocalStorage('./data');
+
       return ({
-        request
+        request,localStorage
       })
     } else {
       return (null)
@@ -822,10 +809,14 @@ function nobyda() {
   const write = (value, key) => {
     if (isQuanX) return $prefs.setValueForKey(value, key)
     if (isSurge) return $persistentStore.write(value, key)
+    if (isNode) return node.localStorage.setItem(key, value)
+
   }
+
   const read = (key) => {
     if (isQuanX) return $prefs.valueForKey(key)
     if (isSurge) return $persistentStore.read(key)
+    if (isNode) return node.localStorage.getItem(key)
   }
   const adapterStatus = (response) => {
     if (response) {
