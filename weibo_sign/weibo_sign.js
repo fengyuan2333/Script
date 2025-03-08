@@ -35,6 +35,49 @@ JsBox, Node.js用户获取Cookie说明：
 
 
 let API_URL = "https://api.weibo.cn/2/cardlist";
+
+var cache = {
+  firstPageTopics: [],
+  pageIndexLinks: [],
+  lastUpdateTime: null
+};
+
+// 保存缓存到本地存储
+function saveCache() {
+  $nobyda.write(JSON.stringify(cache), 'WeiboTopicsCache');
+}
+
+// 从本地存储读取缓存
+function loadCache() {
+  const cacheStr = $nobyda.read('WeiboTopicsCache');
+  if (cacheStr) {
+    try {
+      cache = JSON.parse(cacheStr);
+    } catch (e) {
+      console.log('缓存解析失败，将重新获取数据');
+    }
+  }
+}
+
+// 比较两个超话列表是否完全一致
+function compareTopicLists(list1, list2) {
+  if (!list1 || !list2 || list1.length !== list2.length) return false;
+  return list1.every((topic, index) => 
+    topic.title === list2[index].title && 
+    topic.desc === list2[index].desc
+  );
+}
+
+// 使用缓存的索引链接并发获取超话列表
+async function getTopicsWithCache() {
+  const promises = cache.pageIndexLinks.map(link => 
+    get_topics(link, headers1)
+  );
+  const results = await Promise.all(promises);
+  return results.reduce((acc, curr) => 
+    acc.concat(curr.topic), []
+  );
+}
 let SIGN_URL = "https://api.weibo.cn/2/page/button";
 let headers1 = {
     "Accept": "*/*",
@@ -186,42 +229,56 @@ var jsonParams2=ParamsJsonUpdate(jsonParams);
 
 
 while(isskip==false){
-
-                // # 重置 output 为空字符串
                 var output = "";
-
-                var page=0;
-                var since_id11='123';
-                var topics_count=[];
-
-                while (since_id11 != '' ){
-
+                var page = 0;
+                var since_id11 = '123';
+                var topics_count = [];
+                
+                // 加载缓存
+                loadCache();
+                
+                // 获取第一页数据
+                const firstPageTopics = await get_topics(jsonParams2['str'], headers1);
+                
+                // 检查缓存是否有效
+                if (cache.firstPageTopics.length > 0 && 
+                    compareTopicLists(firstPageTopics.topic, cache.firstPageTopics)) {
+                  console.log('使用缓存的索引链接并发获取超话列表...');
+                  topics_count = await getTopicsWithCache();
+                } else {
+                  console.log('缓存无效，重新获取所有超话列表...');
+                  // 保存第一页数据用于后续比对
+                  cache.firstPageTopics = firstPageTopics.topic;
+                  cache.pageIndexLinks = [];
+                  
+                  // 原有的逐页获取逻辑
+                  while (since_id11 != '') {
                     page++;
-                console.log('正在请求第'+page+'页');
-                                    // # 假设您有一个函数 get_topics 来获取主题列表
-                var ii=0;
-                var topics='';
-
-                topics = await get_topics(jsonParams2['str']+'&since_id='+since_id11, headers1);
-// {'msg':'获取失败','topic':[],'since_id':''}
-                while(topics['msg']=='获取失败' && ii <=retry){
-                    ii++;
-                    console.log('第'+page+'页获取失败，预计重试'+retry+'次,准备'+retry_time/1000+'秒后第'+ii+'次重试');
-                    $nobyda.sleep(retry_time);
-                    console.log('开始重试');
-                    topics = await get_topics(jsonParams2['str'].replace('page=1','page='+page), headers1);
-
+                    console.log('正在请求第'+page+'页');
+                    var ii = 0;
+                    var topics = '';
+                    
+                    const currentLink = jsonParams2['str'] + '&since_id=' + since_id11;
+                    cache.pageIndexLinks.push(currentLink);
+                    
+                    topics = await get_topics(currentLink, headers1);
+                    while(topics['msg']=='获取失败' && ii <= retry){
+                      ii++;
+                      console.log('第'+page+'页获取失败，预计重试'+retry+'次,准备'+retry_time/1000+'秒后第'+ii+'次重试');
+                      $nobyda.sleep(retry_time);
+                      console.log('开始重试');
+                      topics = await get_topics(jsonParams2['str'].replace('page=1','page='+page), headers1);
+                    }
+                    
+                    topics_count = [...topics_count, ...topics['topic']];
+                    since_id11 = topics['since_id'];
+                  }
+                  
+                  // 保存缓存
+                  cache.lastUpdateTime = new Date().getTime();
+                  saveCache();
                 }
-                // listcount=topics['topic'].length;
-                // console.log(listcount);
-
-                topics_count=[...topics_count,...topics['topic']];
-
-                since_id11=topics['since_id'];
-                // console.log(since_id11);
-
-                }
-
+                
                 console.log('获取完成,总共超话【'+topics_count.length+'】个');
 
 
