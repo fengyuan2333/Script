@@ -251,8 +251,15 @@ while(isskip==false){
                 // 获取第一页数据
                 const firstPageTopics = await get_topics(jsonParams2['str'], headers1);
                 
+                // 检查是否获取成功
+                if (!firstPageTopics || !firstPageTopics.topic) {
+                    console.log('获取超话列表失败，跳过后续处理');
+                    return;
+                }
+                
                 // 提取纯标题信息用于比对
                 const firstPageTitles = extractTopicTitles(firstPageTopics.topic);
+                
                 const cachedTitles = cache.firstPageTopics.length > 0 ? 
                   extractTopicTitles(cache.firstPageTopics) : [];
 
@@ -624,9 +631,23 @@ function sign_topic(title, action, params) {
 }
 
 // 批量并发签到
-async function batchSignTopics(topics, params, batchSize = 40) {
-    // 动态调整批次大小，根据失败率自适应
+async function batchSignTopics(topics, params, batchSize = 50) {
+    // 从本地存储读取上次的批次大小和时间戳
+    const savedData = $nobyda.read('WB_BATCH_SIZE_DATA');
     let dynamicBatchSize = batchSize;
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            // 检查数据是否在96小时内
+            if (Date.now() - data.timestamp < 96 * 60 * 60 * 1000) {
+                dynamicBatchSize = data.batchSize;
+                console.log(`使用已保存的批次大小: ${dynamicBatchSize}`);
+            }
+        } catch (e) {
+            console.log('读取保存的批次大小失败:', e);
+        }
+    }
+
     let failureRate = 0;
     const MIN_BATCH_SIZE = 2;
     const MAX_BATCH_SIZE = 50;
@@ -677,6 +698,13 @@ async function batchSignTopics(topics, params, batchSize = 40) {
                 dynamicBatchSize = Math.min(MAX_BATCH_SIZE, dynamicBatchSize + 1);
                 console.log(`失败率较低，增加批次大小至: ${dynamicBatchSize}`);
             }
+
+            // 保存当前的批次大小和时间戳
+            $nobyda.write(JSON.stringify({
+                batchSize: dynamicBatchSize,
+                timestamp: Date.now()
+            }), 'WB_BATCH_SIZE_DATA');
+
         } catch (error) {
             console.log(`当前批次处理失败:`, error);
             failedCount++;
