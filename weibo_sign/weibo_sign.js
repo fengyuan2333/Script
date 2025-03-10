@@ -39,11 +39,17 @@ JsBox, Node.js用户获取Cookie说明：
 
 let API_URL = "https://api.weibo.cn/2/cardlist";
 
+// 初始化请求统计变量
+let totalRequests = 0;
+
+
 var cache = {
   firstPageTopics: [],
   pageIndexLinks: [],
   lastUpdateTime: null
 };
+
+
 
 // 保存缓存到本地存储
 function saveCache() {
@@ -168,8 +174,8 @@ hostname= api.weibo.cn
 
 
 
+var execStartTime = Date.now();
 var LogDetails = false; // 响应日志
-
 var pushMsg = [];
 
 
@@ -266,9 +272,12 @@ while(isskip==false){
                 // 检查缓存是否有效
                 if (cachedTitles.length > 0 && compareTopicLists(firstPageTitles, cachedTitles)) {
                   console.log('使用缓存的索引链接并发获取超话列表...');
+                  totalRequests++;
+
                   topics_count = await getTopicsWithCache();
                 } else {
                   console.log('缓存无效，重新获取所有超话列表...');
+                  totalRequests++;
                   // 保存第一页数据用于后续比对
                   cache.firstPageTopics = firstPageTopics.topic;
                   cache.pageIndexLinks = [];
@@ -352,8 +361,35 @@ console.log(message_to_push);
 
 
 if(username_return['issuccess']){
-    $nobyda.notify("微博超话签到执行完成", '@'+username+',总超话【'+topics_count.length+'】个', '全部签到完成，本次签到【'+message_to_push_count+'】个超话\n'+message_to_push);
-}else{
+    const executionTime = ((Date.now() - execStartTime) / 1000).toFixed(2);
+    let summary = `执行完成 ✅\n总用时: ${executionTime}秒\n`;
+    
+    // if (totalRequests > 0) {
+    //     const batchSize = dynamicBatchSize || defaultBatchSize;
+    //     summary += `批次大小: ${batchSize}\n`;
+        
+
+    // }
+
+    if (topics_count && topics_count.length > 0) {
+        const successCount = message_to_push_count || 0;
+        const failCount = topics_count.length - successCount;
+        
+        summary += `总超话数: ${topics_count.length}\n`;
+        if (message_to_push_count > 0) {
+            summary += `✓ 成功: ${successCount}\n`;
+            summary += `✗ 失败: ${failCount}\n`;
+            summary += `详细信息:\n${message_to_push}`;
+        } else {
+            summary += '当前没有需要签到的超话';
+        }
+    } else {
+        summary += '未获取到超话列表';
+    }
+    
+    $nobyda.notify("微博超话签到执行完成", `@${username}`, summary);
+
+  }else{
     $nobyda.notify("微博超话签到执行失败", '', username_return['errmsg']);
 }
 
@@ -465,6 +501,7 @@ function get_since_id(params, headers){
       resolve();
     })
   })
+
 
 
 
