@@ -333,7 +333,7 @@ while(isskip==false){
                 // console.log(111);
                 console.log('开始并发签到...');
                 const signResults = await batchSignTopics(topics_count, jsonParams2['str']);
-                message_to_push_count = signResults.filter(msg => msg && !msg.includes('失败')).length;
+                message_to_push_count += signResults.filter(msg => msg && !msg.includes('失败')).length;
                 message_to_push = signResults.join('\n');
                 console.log('并发签到完成！');
                 }
@@ -388,6 +388,7 @@ if(username_return['issuccess']){
     }
     
     $nobyda.notify("微博超话签到执行完成", `@${username}`, summary);
+    console.log("微博超话签到", `@${username}`, summary);
 
   }else{
     $nobyda.notify("微博超话签到执行失败", '', username_return['errmsg']);
