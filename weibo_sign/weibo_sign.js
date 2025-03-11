@@ -377,8 +377,8 @@ if(username_return['issuccess']){
         
         summary += `总超话数: ${topics_count.length}\n`;
         if (message_to_push_count > 0) {
-            summary += `✓ 成功: ${successCount}\n`;
-            summary += `✗ 失败: ${failCount}\n`;
+            summary += `✓ 本次成功签到: ${successCount}\n`;
+            // summary += `✗ 失败: ${failCount}\n`;
             summary += `详细信息:\n${message_to_push}`;
         } else {
             summary += '当前没有需要签到的超话';
