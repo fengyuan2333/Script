@@ -527,26 +527,39 @@ function get_since_id(params, headers){
 function get_topics(params, maxRetries = 3) {
     let retryCount = 0;
     const baseDelay = 1000; // 基础延迟时间（毫秒）
-
-    return new Promise(async (resolve) => {
+    
+    return new Promise((resolve) => {
         const attemptFetch = async () => {
             var URL = {
                 url: API_URL + '?' + params,
                 headers: headers1
             }
 
-            $nobyda.get(URL, function (error, response, data) {
-                var since_id1 = '';
-                if (error !== null) {
-                    console.log('获取失败，错误信息：', error);
+            const retryWithDelay = () => {
+                return new Promise((retryResolve) => {
                     if (retryCount < maxRetries) {
                         retryCount++;
                         const delay = baseDelay * Math.pow(2, retryCount - 1);
                         console.log(`第${retryCount}次重试，等待${delay}ms...`);
-                        setTimeout(attemptFetch, delay);
-                        return;
+                        setTimeout(() => {
+                            retryResolve();
+                        }, delay);
+                    } else {
+                        resolve({'msg': '获取失败', 'topic': [], 'since_id': ''});
                     }
-                    resolve({'msg': '获取失败', 'topic': [], 'since_id': ''});
+                });
+            };
+
+            $nobyda.get(URL, async function (error, response, data) {
+                var since_id1 = '';
+                if (error !== null) {
+                    console.log('获取失败，错误信息：', error);
+                    console.log('输出response');
+                    console.log(response);
+                    await retryWithDelay();
+                    if (retryCount < maxRetries) {
+                        return attemptFetch();
+                    }
                     return;
                 } else if (response.statusCode == 200) {
                     try {
@@ -585,25 +598,17 @@ function get_topics(params, maxRetries = 3) {
                         resolve({'msg':'获取成功','topic':topics,'since_id':since_id1});
                     } catch (error) {
                         console.error('解析数据时出现错误:', error);
+                        await retryWithDelay();
                         if (retryCount < maxRetries) {
-                            retryCount++;
-                            const delay = baseDelay * Math.pow(2, retryCount - 1);
-                            console.log(`第${retryCount}次重试，等待${delay}ms...`);
-                            setTimeout(attemptFetch, delay);
-                            return;
+                            return attemptFetch();
                         }
-                        resolve({'msg': '获取失败', 'topic': [], 'since_id': ''});
                     }
                 } else {
                     console.log('获取超话列表出现错误，状态码：', response.statusCode);
+                    await retryWithDelay();
                     if (retryCount < maxRetries) {
-                        retryCount++;
-                        const delay = baseDelay * Math.pow(2, retryCount - 1);
-                        console.log(`第${retryCount}次重试，等待${delay}ms...`);
-                        setTimeout(attemptFetch, delay);
-                        return;
+                        return attemptFetch();
                     }
-                    resolve({'msg': '获取失败', 'topic': [], 'since_id': ''});
                 }
             });
         }
