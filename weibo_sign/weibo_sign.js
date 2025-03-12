@@ -210,6 +210,7 @@ var username_return={'issuccess':false};
 var loperror=0;
 var message_to_push = "";
 var message_to_push_count=0;
+var message_to_push_fail_count=0;
 while (succeeded==false && loperror<=retry){
     try {
 
@@ -334,6 +335,7 @@ while(isskip==false){
                 console.log('开始并发签到...');
                 const signResults = await batchSignTopics(topics_count, jsonParams2['str']);
                 message_to_push_count += signResults.filter(msg => msg && !msg.includes('失败')).length;
+                message_to_push_fail_count= signResults.filter(msg => msg && msg.includes('失败')).length;
                 message_to_push = signResults.join('\n');
                 console.log('并发签到完成！');
                 }
@@ -373,15 +375,18 @@ if(username_return['issuccess']){
 
     if (topics_count && topics_count.length > 0) {
         const successCount = message_to_push_count || 0;
-        const failCount = topics_count.length - successCount;
-        
+        // const failCount = topics_count.length - successCount;
+        const failCount = message_to_push_fail_count||0;
+
         summary += `总超话数: ${topics_count.length}\n`;
         if (message_to_push_count > 0) {
+          if (failCount>0) summary+=`⭕️本次签到有失败，建议执行一遍\n`;
             summary += `✓ 本次成功签到: ${successCount}\n`;
             // summary += `✗ 失败: ${failCount}\n`;
+            summary += `✗ 失败: ${failCount}\n`;
             summary += `详细信息:\n${message_to_push}`;
         } else {
-            summary += '当前没有需要签到的超话';
+            summary += '🎆当前没有需要签到的超话';
         }
     } else {
         summary += '未获取到超话列表';
@@ -669,7 +674,7 @@ function sign_topic(title, action, params) {
 }
 
 // 批量并发签到
-async function batchSignTopics(topics, params, batchSize = 50) {
+async function batchSignTopics(topics, params, batchSize = 30) {
     // 从本地存储读取上次的批次大小和时间戳
     const savedData = $nobyda.read('WB_BATCH_SIZE_DATA');
     let dynamicBatchSize = batchSize;
@@ -688,7 +693,7 @@ async function batchSignTopics(topics, params, batchSize = 50) {
 
     let failureRate = 0;
     const MIN_BATCH_SIZE = 2;
-    const MAX_BATCH_SIZE = 50;
+    const MAX_BATCH_SIZE = 30;
 
     // 过滤出需要签到的超话
     const topicsToSign = topics.filter(topic => topic.sign_action !== null);
@@ -785,7 +790,12 @@ async function retryOperation(operation, maxRetries, delay = retry_time) {
 
         if (i < maxRetries - 1) {
             // 指数退避策略
-            exponentialDelay = Math.min(delay * Math.pow(2, i), 10000);
+            // 如果是HTTP 418状态码（请求过快），等待至少10秒
+            if (lastError && lastError.message.includes('418')) {
+                exponentialDelay = Math.max(10000, delay * Math.pow(2, i));
+            } else {
+                exponentialDelay = Math.min(delay * Math.pow(2, i), 10000);
+            }
             console.log(`等待${exponentialDelay/1000}秒后进行下一次重试...`);
             await new Promise(resolve => setTimeout(resolve, exponentialDelay));
         }
