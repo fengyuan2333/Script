@@ -671,6 +671,10 @@ function sign_topic(title, action, params) {
 
 // 批量并发签到
 async function batchSignTopics(topics, params, batchSize = 30) {
+  let failureRate = 0;
+  const MIN_BATCH_SIZE = 2;//最小
+  const MAX_BATCH_SIZE = 35;//最大
+
     // 从本地存储读取上次的批次大小和时间戳
     const savedData = $nobyda.read('WB_BATCH_SIZE_DATA');
     let dynamicBatchSize = batchSize;
@@ -679,7 +683,9 @@ async function batchSignTopics(topics, params, batchSize = 30) {
             const data = JSON.parse(savedData);
             // 检查数据是否在96小时内
             if (Date.now() - data.timestamp < 96 * 60 * 60 * 1000) {
-                dynamicBatchSize = data.batchSize;
+                // 动态设置批次大小，确保不超过最大限制
+                dynamicBatchSize = data.batchSize > MAX_BATCH_SIZE ? MAX_BATCH_SIZE : data.batchSize;
+                
                 console.log(`使用已保存的批次大小: ${dynamicBatchSize}`);
             }
         } catch (e) {
@@ -687,9 +693,7 @@ async function batchSignTopics(topics, params, batchSize = 30) {
         }
     }
 
-    let failureRate = 0;
-    const MIN_BATCH_SIZE = 2;
-    const MAX_BATCH_SIZE = 30;
+
 
     // 过滤出需要签到的超话
     const topicsToSign = topics.filter(topic => topic.sign_action !== null);
