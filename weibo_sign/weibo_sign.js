@@ -673,7 +673,7 @@ function sign_topic(title, action, params) {
 async function batchSignTopics(topics, params, batchSize = 30) {
   let failureRate = 0;
   const MIN_BATCH_SIZE = 2;//最小
-  const MAX_BATCH_SIZE = 35;//最大
+  const MAX_BATCH_SIZE = 20;//最大
 
     // 从本地存储读取上次的批次大小和时间戳
     const savedData = $nobyda.read('WB_BATCH_SIZE_DATA');
