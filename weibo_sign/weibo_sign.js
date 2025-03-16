@@ -670,10 +670,10 @@ function sign_topic(title, action, params) {
 }
 
 // 批量并发签到
-async function batchSignTopics(topics, params, batchSize = 30) {
+async function batchSignTopics(topics, params, batchSize = 14) {
   let failureRate = 0;
   const MIN_BATCH_SIZE = 2;//最小
-  const MAX_BATCH_SIZE = 20;//最大
+  const MAX_BATCH_SIZE = 14;//最大
 
     // 从本地存储读取上次的批次大小和时间戳
     const savedData = $nobyda.read('WB_BATCH_SIZE_DATA');
