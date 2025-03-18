@@ -2,7 +2,7 @@
 
 
 
-微博超话签到脚本1
+微博超话签到脚本
 作者：fengyuan2333
 github:https://github.com/fengyuan2333
 更新时间: 2025/03/09
