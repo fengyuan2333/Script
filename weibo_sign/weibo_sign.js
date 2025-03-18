@@ -995,7 +995,7 @@ function nobyda() {
 
 
 
-  const log = (message) => console.log(message)
+  // const log = (message) => console.log(message)
   const time = () => {
     const end = ((Date.now() - start) / 1000).toFixed(2)
     return console.log('\n签到用时: ' + end + ' 秒')
