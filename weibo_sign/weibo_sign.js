@@ -42,21 +42,6 @@ let API_URL = "https://api.weibo.cn/2/cardlist";
 // 初始化请求统计变量
 let totalRequests = 0;
 
-// 获取格式化的时间字符串
-function getTimeString() {
-  const now = new Date();
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  const seconds = now.getSeconds().toString().padStart(2, '0');
-  const milliseconds = now.getMilliseconds().toString().padStart(3, '0');
-  return `[${hours}:${minutes}:${seconds}.${milliseconds}]`;
-}
-
-// 封装console.log，添加时间戳
-function log(...args) {
-  console.log(getTimeString(), ...args);
-}
-
 
 var cache = {
   firstPageTopics: [],
@@ -78,7 +63,7 @@ function loadCache() {
     try {
       cache = JSON.parse(cacheStr);
     } catch (e) {
-      log('缓存解析失败，将重新获取数据');
+      console.log('缓存解析失败，将重新获取数据');
     }
   }
 }
@@ -275,7 +260,7 @@ while(isskip==false){
                 
                 // 检查是否获取成功
                 if (!firstPageTopics || !firstPageTopics.topic || firstPageTopics.msg=='获取失败') {
-                    log('获取超话列表失败，跳过后续处理');
+                    console.log('获取超话列表失败，跳过后续处理');
                     $nobyda.notify("获取超话列表失败，跳过后续处理", `@${username}`);
                     return;
                 }
@@ -288,12 +273,12 @@ while(isskip==false){
 
                 // 检查缓存是否有效
                 if (cachedTitles.length > 0 && compareTopicLists(firstPageTitles, cachedTitles)) {
-                  log('使用缓存的索引链接并发获取超话列表...');
+                  console.log('使用缓存的索引链接并发获取超话列表...');
                   totalRequests++;
 
                   topics_count = await getTopicsWithCache();
                 } else {
-                  log('缓存无效，重新获取所有超话列表...');
+                  console.log('缓存无效，重新获取所有超话列表...');
                   totalRequests++;
                   // 保存第一页数据用于后续比对
                   cache.firstPageTopics = firstPageTopics.topic;
@@ -302,7 +287,7 @@ while(isskip==false){
                   // 原有的逐页获取逻辑
                   while (since_id11 != '') {
                     page++;
-                    log('正在请求第'+page+'页');
+                    console.log('正在请求第'+page+'页');
                     var ii = 0;
                     var topics = '';
                     
@@ -311,7 +296,7 @@ while(isskip==false){
                     
                     topics = await get_topics(currentLink, headers1);
                     if (topics['msg'] == '获取失败') {
-                      log('第'+page+'页获取失败');
+                      console.log('第'+page+'页获取失败');
                       break;
                     }
                     
@@ -324,7 +309,7 @@ while(isskip==false){
                   saveCache();
                 }
                 
-                log('获取完成,总共超话【'+topics_count.length+'】个');
+                console.log('获取完成,总共超话【'+topics_count.length+'】个');
 
 
 
@@ -348,19 +333,19 @@ while(isskip==false){
                     output +='超话标题:'+topics_count[key]['title']+"状态:"+topics_count[key]['sign_status'];
                 }
                 // console.log(111);
-                log('开始并发签到...');
+                console.log('开始并发签到...');
                 const signResults = await batchSignTopics(topics_count, jsonParams2['str']);
                 message_to_push_count += signResults.filter(msg => msg && !msg.includes('失败')).length;
                 message_to_push_fail_count= signResults.filter(msg => msg && msg.includes('失败')).length;
                 message_to_push = signResults.join('\n');
-                log('并发签到完成！');
+                console.log('并发签到完成！');
                 }
 succeeded=true;
-                // log('跳出循环');
+                // console.log('跳出循环');
 
 // print('微博签到结果',message_to_push)
-    log('微博签到结果');
-    log(message_to_push);
+    console.log('微博签到结果');
+console.log(message_to_push);
 
 
 
@@ -368,11 +353,11 @@ succeeded=true;
 
 
     }catch(error){
-    log('出错,等待10秒后进行第'+loperror+1+'次重试');
-    log(error);
+    console.log('出错,等待10秒后进行第'+loperror+1+'次重试');
+    console.log(error);
     $nobyda.sleep(10000);
     // await new Promise(r => setTimeout(r, 60000));
-    log('10秒等待完成');
+    console.log('10秒等待完成');
     loperror++;
     }
 }
@@ -409,7 +394,7 @@ if(username_return['issuccess']){
     }
     
     $nobyda.notify("微博超话签到执行完成", `@${username}`, summary);
-    log("微博超话签到", `@${username}`, summary);
+    console.log("微博超话签到", `@${username}`, summary);
 
   }else{
     $nobyda.notify("微博超话签到执行失败", '', username_return['errmsg']);
@@ -417,7 +402,7 @@ if(username_return['issuccess']){
 
         await $nobyda.time();
     } else {
-      log(`Cookie缺少关键值，需重新获取`)
+      console.log(`Cookie缺少关键值，需重新获取`)
     }
   } else {
     $nobyda.notify("微博超话签到", "", "签到终止, 未获取Cookie");
@@ -474,12 +459,12 @@ function get_username_wait(params){
 
       } catch (e) {
         taskListMsg = `${e.message || e} ‼️`;
-        log('错误');
-        log(taskListMsg);
-        log(response);
+        console.log('错误');
+        console.log(taskListMsg);
+        console.log(response);
       }
 
-        log('用户名:'+username1);
+        console.log('用户名:'+username1);
 
       resolve(returnmsg);
     })
@@ -508,17 +493,17 @@ function get_since_id(params, headers){
         if (error) throw new Error(`请求失败`);
 
         obj = JSON.parse(data);
-        log('测试obj');
-        log(obj);
+        console.log('测试obj');
+        console.log(obj);
       } catch (e) {
         // taskListMsg = `${e.message || e} ‼️`;
-        log('错误');
-        log(taskListMsg);
+        console.log('错误');
+        console.log(taskListMsg);
       }
-        log('since_id 完成');
+        console.log('since_id 完成');
       var since_id = obj["cardlistInfo"]["since_id"];
 
-      log(since_id);
+      console.log(since_id);
 
       resolve();
     })
@@ -600,19 +585,19 @@ function get_topics(params, headers1,maxRetries = 3) {
                 for (let key in topics) {
                     output += '超话标题:' + topics[key]['title'] + ',状态:' + topics[key]['sign_status'] + '\n';
                 }
-                log(output);
+                console.log(output);
                 resolve({'msg':'获取成功','topic':topics,'since_id':since_id1});
 
             } catch (error) {
-                console.error(getTimeString(), '请求或解析出错:', error);
+                console.error('请求或解析出错:', error);
                 if (retryCount >= maxRetries) {
-                    log(`使用已保存的批次大小: ${dynamicBatchSize}`);
+                    console.log(`已达到最大重试次数${maxRetries}次，停止重试`);
                     resolve({'msg': '获取失败', 'topic': [], 'since_id': ''});
                     return;
                 }
                 
                 const delay = baseDelay * Math.pow(2, retryCount);
-                log(`第${retryCount + 1}次重试，等待${delay}ms`);
+                console.log(`第${retryCount + 1}次重试，等待${delay}ms`);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return await attemptFetch(retryCount + 1);
             }
@@ -647,13 +632,13 @@ function sign_topic(title, action, params) {
 
         // 计算请求耗时
         const requestTime = Date.now() - startTime;
-        const logPrefix = `${getTimeString()} [${title}][${requestTime}ms]`;
+        const logPrefix = `[${title}][${requestTime}ms]`;
 
         if (errormsg !== null) {
             const errorType = errormsg.includes('timeout') ? '请求超时' : 
                             errormsg.includes('ECONNREFUSED') ? '连接被拒绝' : 
                             errormsg.includes('ENOTFOUND') ? 'DNS解析失败' : '网络错误';
-            log(`${logPrefix} 签到失败: ${errorType} - ${errormsg}`);
+            console.log(`${logPrefix} 签到失败: ${errorType} - ${errormsg}`);
             const error_output = `超话标题:${title}，状态:签到失败！(${errorType}: ${errormsg})`;
             resolve(error_output);
         } else if (response.statusCode == 200) {
@@ -661,23 +646,23 @@ function sign_topic(title, action, params) {
                 const datas = JSON.parse(data);
                 if (datas['msg'] == '已签到') {
                     const qd_output = `超话标题:${title}，状态:签到成功！`;
-                    log(`${logPrefix} ${qd_output}`);
+                    console.log(`${logPrefix} ${qd_output}`);
                     resolve(qd_output);
                 } else {
                     const fail_output = `超话标题:${title}，状态:签到失败！(${datas['msg']})`;
-                    log(`${logPrefix} 签到失败: ${datas['msg']}`);
+                    console.log(`${logPrefix} 签到失败: ${datas['msg']}`);
                     resolve(fail_output);
                 }
             } catch (e) {
                 const parse_error = `超话标题:${title}，状态:签到失败！(解析响应失败: ${e.message})`;
-                log(`${logPrefix} 解析响应失败:`, e);
+                console.log(`${logPrefix} 解析响应失败:`, e);
                 resolve(parse_error);
             }
         } else {
             const statusText = response.statusCode >= 500 ? '服务器错误' : 
                               response.statusCode >= 400 ? '客户端错误' : '未知错误';
             const status_error = `超话标题:${title}，状态:签到失败！(${statusText} - HTTP状态码:${response.statusCode})`;
-            log(`${logPrefix} ${statusText}`);
+            console.log(`${logPrefix} ${statusText}`);
             resolve(status_error);
         }
     });
@@ -701,10 +686,10 @@ async function batchSignTopics(topics, params, batchSize = 10) {
                 // 动态设置批次大小，确保不超过最大限制
                 dynamicBatchSize = data.batchSize > MAX_BATCH_SIZE ? MAX_BATCH_SIZE : data.batchSize;
                 
-                log(`使用已保存的批次大小: ${dynamicBatchSize}`);
+                console.log(`使用已保存的批次大小: ${dynamicBatchSize}`);
             }
         } catch (e) {
-            log('读取保存的批次大小失败:', e);
+            console.log('读取保存的批次大小失败:', e);
         }
     }
 
@@ -721,7 +706,7 @@ async function batchSignTopics(topics, params, batchSize = 10) {
         const currentBatchSize = Math.min(dynamicBatchSize, remainingTopics);
         const batch = topicsToSign.slice(processedCount, processedCount + currentBatchSize);
         
-        log(`处理第 ${Math.floor(processedCount/dynamicBatchSize) + 1}/${Math.ceil(topicsToSign.length/dynamicBatchSize)} 批签到请求...`);
+        console.log(`处理第 ${Math.floor(processedCount/dynamicBatchSize) + 1}/${Math.ceil(topicsToSign.length/dynamicBatchSize)} 批签到请求...`);
 
         const batchPromises = batch.map(topic => {
             if (topic.sign_action) {
@@ -734,7 +719,7 @@ async function batchSignTopics(topics, params, batchSize = 10) {
                         return result;
                     })
                     .catch(error => {
-                        log(`签到失败 (${topic.title}):`, error);
+                        console.log(`签到失败 (${topic.title}):`, error);
                         return `超话标题:${topic.title}，状态:签到失败！(${error})`;
                     });
             }
@@ -745,16 +730,16 @@ async function batchSignTopics(topics, params, batchSize = 10) {
             const batchResults = await Promise.all(batchPromises);
             results = results.concat(batchResults.filter(r => r));
             processedCount += currentBatchSize; // 更新已处理数量
-            log(`当前批次签到完成，已处理 ${processedCount}/${topicsToSign.length} 个超话`);
+            console.log(`当前批次签到完成，已处理 ${processedCount}/${topicsToSign.length} 个超话`);
 
             // 计算失败率并动态调整批次大小
             failureRate = failedCount / processedCount;
             if (failureRate > 0.3 && dynamicBatchSize > MIN_BATCH_SIZE) {
                 dynamicBatchSize = Math.max(MIN_BATCH_SIZE, dynamicBatchSize - 1);
-                log(`失败率较高，减小批次大小至: ${dynamicBatchSize}`);
+                console.log(`失败率较高，减小批次大小至: ${dynamicBatchSize}`);
             } else if (failureRate < 0.1 && dynamicBatchSize < MAX_BATCH_SIZE) {
                 dynamicBatchSize = Math.min(MAX_BATCH_SIZE, dynamicBatchSize + 1);
-                log(`失败率较低，增加批次大小至: ${dynamicBatchSize}`);
+                console.log(`失败率较低，增加批次大小至: ${dynamicBatchSize}`);
             }
 
             // 保存当前的批次大小和时间戳
@@ -764,7 +749,7 @@ async function batchSignTopics(topics, params, batchSize = 10) {
             }), 'WB_BATCH_SIZE_DATA');
 
         } catch (error) {
-            log(`当前批次处理失败:`, error);
+            console.log(`当前批次处理失败:`, error);
             failedCount++;
         }
         
@@ -775,7 +760,7 @@ async function batchSignTopics(topics, params, batchSize = 10) {
         }
     }
 
-    log(`所有批次处理完成，总失败率: ${(failureRate * 100).toFixed(2)}%`);
+    console.log(`所有批次处理完成，总失败率: ${(failureRate * 100).toFixed(2)}%`);
     return results;
 }
 
@@ -800,7 +785,7 @@ async function retryOperation(operation, maxRetries, delay = retry_time) {
         } catch (error) {
             lastError = error;
             errors.push({ attempt: i + 1, error: error.message, timestamp: new Date().toISOString() });
-            log(`操作失败，第${i + 1}次重试，错误信息：${error.message}`);
+            console.log(`操作失败，第${i + 1}次重试，错误信息：${error.message}`);
         }
 
         if (i < maxRetries - 1) {
@@ -811,7 +796,7 @@ async function retryOperation(operation, maxRetries, delay = retry_time) {
             } else {
                 exponentialDelay = Math.min(delay * Math.pow(2, i), 10000);
             }
-            log(`等待${exponentialDelay/1000}秒后进行下一次重试...`);
+            console.log(`等待${exponentialDelay/1000}秒后进行下一次重试...`);
             await new Promise(resolve => setTimeout(resolve, exponentialDelay));
         }
     }
@@ -822,7 +807,7 @@ async function retryOperation(operation, maxRetries, delay = retry_time) {
         errors: errors,
         finalError: lastError?.message || '未知错误'
     };
-    log('重试失败详细信息:', JSON.stringify(errorLog, null, 2));
+    console.log('重试失败详细信息:', JSON.stringify(errorLog, null, 2));
 
     return `重试${maxRetries}次后仍然失败: ${lastError?.message || '未知错误'}`;
 }
@@ -848,12 +833,12 @@ function GetCookie() {
           $nobyda.write(JSON.stringify(Date.now()), "CookieWeiBoTime")
           $nobyda.notify(`${RA ? `更新` : `首次写入`}微博超话签到Cookie成功 🎉`, "", "")
         } else {
-          log(`\n更新微博超话Cookie成功! 🎉\n检测到频繁通知, 已转为输出日志`)
+          console.log(`\n更新微博超话Cookie成功! 🎉\n检测到频繁通知, 已转为输出日志`)
 
         }
       }
     } else {
-      log("\n微博超话-与本机储存Cookie相同, 跳过写入 ⚠️")
+      console.log("\n微博超话-与本机储存Cookie相同, 跳过写入 ⚠️")
     }
   } else {
     $nobyda.notify(`微博超话`, "", "写入Cookie失败，关键值缺失 ⚠️")
@@ -995,7 +980,7 @@ function nobyda() {
 
 
 
-  // const log = (message) => console.log(message)
+  const log = (message) => console.log(message)
   const time = () => {
     const end = ((Date.now() - start) / 1000).toFixed(2)
     return console.log('\n签到用时: ' + end + ' 秒')
